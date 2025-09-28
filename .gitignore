@@ -1,0 +1,40 @@
+# dependencies
+node_modules/
+
+# environment variables
+.env
+.env.local
+.env.example
+
+# build outputs
+build/
+dist/
+client/build/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+*.log
+
+# cache
+.npm
+.eslintcache
+.cache
+
+# temporary files
+tmp/
+temp/
+*.tmp
+
+# os generated files
+.DS_Store
+Thumbs.db
+
+# editor files
+.vscode/
+.idea/
+*.swp
+*~
+
+# vercel
+.vercel

@@ -1,0 +1,68 @@
+{
+  "version": 2,
+  "buildCommand": "cd client && npm install && npm run build",
+  "outputDirectory": "client/build",
+  "rewrites": [
+    {
+      "source": "/api/auth/login",
+      "destination": "/api/auth/auth?action=login"
+    },
+    {
+      "source": "/api/auth/signup",
+      "destination": "/api/auth/auth?action=signup"
+    },
+    {
+      "source": "/api/auth/oauth/twitter",
+      "destination": "/api/auth/oauth?platform=twitter"
+    },
+    {
+      "source": "/api/auth/oauth/twitter/callback",
+      "destination": "/api/auth/oauth?platform=twitter"
+    },
+    {
+      "source": "/api/auth/oauth/reddit",
+      "destination": "/api/auth/oauth?platform=reddit"
+    },
+    {
+      "source": "/api/auth/oauth/linkedin",
+      "destination": "/api/auth/oauth?platform=linkedin"
+    },
+    {
+      "source": "/api/auth/oauth/linkedin/callback",
+      "destination": "/api/auth/oauth?platform=linkedin"
+    },
+    {
+      "source": "/api/posts/scheduled",
+      "destination": "/api/posts/posts?action=scheduled"
+    },
+    {
+      "source": "/api/posts/analytics",
+      "destination": "/api/posts/posts?action=analytics"
+    },
+    {
+      "source": "/api/posts/schedule",
+      "destination": "/api/posts/posts?action=schedule"
+    },
+    {
+      "source": "/api/posts/delete/([^/]+)",
+      "destination": "/api/posts/posts?postId=$1"
+    },
+    {
+      "source": "/api/posts",
+      "destination": "/api/posts/posts"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "functions": {
+    "api/**/*.js": {
+      "maxDuration": 30
+    }
+  }
+}
