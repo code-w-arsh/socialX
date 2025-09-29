@@ -65,10 +65,10 @@ Generate ONE short, optimized post that is engaging, valuable, and fits the char
 
     // define fallback models in order of preference
     const models = [
-      'gemini-1.5-flash',      // primary: fast and efficient
-      'gemini-1.5-flash-8b',   // fallback 1: faster, simpler
-      'gemini-1.5-pro',        // fallback 2: more capable
-      'gemini-pro'             // fallback 3: legacy but stable
+      'gemini-2.5-flash',      // primary: latest fast model
+      'gemini-2.0-flash',      // fallback 1: stable fast model
+      'gemini-2.5-pro',        // fallback 2: more capable
+      'gemini-flash-latest'    // fallback 3: latest alias
     ];
 
     let geminiResponse;
@@ -94,7 +94,7 @@ Generate ONE short, optimized post that is engaging, valuable, and fits the char
               temperature: 0.7,
               topK: 40,
               topP: 0.95,
-              maxOutputTokens: 1024,
+              maxOutputTokens: 3072,  // increased to handle Gemini 2.5's high reasoning token usage
             }
           })
         });
@@ -104,7 +104,7 @@ Generate ONE short, optimized post that is engaging, valuable, and fits the char
           break; // success! exit the loop
         } else {
           const errorText = await geminiResponse.text();
-          console.log(`Model ${model} failed:`, errorText);
+          console.log(`Model ${model} failed with status ${geminiResponse.status}:`, errorText);
           lastError = errorText;
         }
       } catch (error) {
@@ -121,12 +121,32 @@ Generate ONE short, optimized post that is engaging, valuable, and fits the char
 
     const geminiData = await geminiResponse.json();
     
+    // log the full response for debugging
+    console.log('Gemini response structure:', JSON.stringify(geminiData, null, 2));
+    
     if (!geminiData.candidates || !geminiData.candidates[0] || !geminiData.candidates[0].content) {
       console.error('Unexpected Gemini response structure:', geminiData);
       return res.status(500).json({ error: 'Invalid response from AI service' });
     }
 
-    const generatedContent = geminiData.candidates[0].content.parts[0].text;
+    const candidate = geminiData.candidates[0];
+    const content = candidate.content;
+    
+    // check if parts array exists and has content
+    if (!content.parts || !content.parts[0] || !content.parts[0].text) {
+      console.error('Missing parts in Gemini response. Finish reason:', candidate.finishReason);
+      
+      // handle specific finish responses
+      if (candidate.finishReason === 'MAX_TOKENS') {
+        return res.status(500).json({ error: 'AI response was truncated. Please try a shorter topic or regenerate.' });
+      } else if (candidate.finishReason === 'SAFETY') {
+        return res.status(500).json({ error: 'Content blocked by safety filters. Please try a different topic.' });
+      } else {
+        return res.status(500).json({ error: 'AI service returned incomplete response. Please try again.' });
+      }
+    }
+
+    const generatedContent = content.parts[0].text;
 
     // return the generated content
     res.status(200).json({

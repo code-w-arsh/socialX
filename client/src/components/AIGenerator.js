@@ -10,7 +10,7 @@ const AIGenerator = () => {
   const [formData, setFormData] = useState({
     topic: '',
     tone: 'professional',
-    platforms: ['twitter'],
+    platform: 'twitter',  // changed from platforms array to single platform
     includeHashtags: true,
     includeEmojis: false,
     contentType: 'informative'
@@ -53,9 +53,7 @@ const AIGenerator = () => {
   const handlePlatformChange = (platform) => {
     setFormData(prev => ({
       ...prev,
-      platforms: prev.platforms.includes(platform)
-        ? prev.platforms.filter(p => p !== platform)
-        : [...prev.platforms, platform]
+      platform: platform  // set single platform instead of array
     }));
   };
 
@@ -65,8 +63,8 @@ const AIGenerator = () => {
       return;
     }
 
-    if (formData.platforms.length === 0) {
-      setError('Please select at least one platform');
+    if (!formData.platform) {
+      setError('Please select a platform');
       return;
     }
 
@@ -74,11 +72,16 @@ const AIGenerator = () => {
     setError('');
 
     try {
-      const response = await apiService.generateAIContent(formData);
+      // convert single platform to array for backend compatibility
+      const requestData = {
+        ...formData,
+        platforms: [formData.platform]
+      };
+      const response = await apiService.generateAIContent(requestData);
       setGeneratedContent(response.content);
     } catch (error) {
       console.error('AI generation error:', error);
-      setError('Service Outage: Gemini 1.5 Flash, try again later');
+      setError('AI Generation Failed: All Gemini models unavailable, please try again later');
     } finally {
       setLoading(false);
     }
@@ -141,12 +144,12 @@ const AIGenerator = () => {
 
                   {/* Platform Selection */}
                   <div className="form-group">
-                    <label>Select Platforms</label>
+                    <label>Select Platform</label>
                     <div className="platform-grid">
                       {platforms.map(platform => (
                         <div
                           key={platform.value}
-                          className={`platform-option ${formData.platforms.includes(platform.value) ? 'selected' : ''}`}
+                          className={`platform-option ${formData.platform === platform.value ? 'selected' : ''}`}
                           onClick={() => handlePlatformChange(platform.value)}
                         >
                           {platform.icon}
